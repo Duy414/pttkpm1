@@ -1,0 +1,158 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+/* Star rating */
+.rating-stars {
+    display: inline-block;
+    position: relative;
+    unicode-bidi: bidi-override;
+    direction: rtl;
+}
+
+.rating-stars input {
+    display: none;
+}
+
+.rating-stars label {
+    color: #ccc;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0 2px;
+}
+
+.rating-stars label:hover,
+.rating-stars label:hover ~ label,
+.rating-stars input:checked ~ label {
+    color: #ffc107;
+}
+
+.rating-stars.small label {
+    font-size: 1rem;
+}
+
+.rating-stars .fa-star-half-alt {
+    position: relative;
+}
+
+.rating-stars .fa-star-half-alt:before {
+    position: absolute;
+    overflow: hidden;
+    display: block;
+    z-index: 1;
+}
+
+.rating-stars .fa-star-half-alt:after {
+    content: '\f005';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+}
+/* Star rating */
+.rating-stars {
+    display: inline-block;
+    position: relative;
+    unicode-bidi: bidi-override;
+    direction: rtl;
+}
+
+.rating-stars input {
+    display: none;
+}
+
+.rating-stars label {
+    color: #ccc;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0 2px;
+}
+
+.rating-stars label:hover,
+.rating-stars label:hover ~ label,
+.rating-stars input:checked ~ label {
+    color: #ffc107;
+}
+
+.rating-stars .fa-star-half-alt {
+    position: relative;
+}
+
+.rating-stars .fa-star-half-alt:before {
+    position: absolute;
+    overflow: hidden;
+    display: block;
+    z-index: 1;
+}
+
+.rating-stars .fa-star-half-alt:after {
+    content: '\f005';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+}
+
+
+//////
+/* Review Form */
+.card-header.bg-light {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.rating-stars label {
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.2s;
+}
+
+.rating-stars input[type="radio"]:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffc107;
+}
+
+.rating-stars input[type="radio"]:checked + label {
+    color: #ffc107;
+}
+
+/* Review List */
+.avatar-title {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.review-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.review-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
