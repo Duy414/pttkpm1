@@ -1,150 +1,176 @@
 @extends('layouts.app')
 
+@section('title', 'Giỏ hàng của bạn')
+
 @section('content')
 <div class="container py-5">
-    <div class="d-flex align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800"><i class="fa-solid fa-cart-flatbed-suitcase me-2"></i>Giỏ Tour Du Lịch</h1>
-        <span class="badge bg-primary ms-3 rounded-pill">{{ count($cartItems) }} tour đang chọn</span>
+    <div class="d-flex align-items-center justify-content-between mb-4 p-4 rounded-4 shadow-sm" 
+         style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
+        <div class="d-flex align-items-center">
+            <div class="icon-box bg-primary text-white rounded-3 p-3 me-3">
+                <i class="fa-solid fa-cart-flatbed-suitcase fs-4"></i>
+            </div>
+            <div>
+                <h1 class="h3 mb-0 fw-bold text-dark">Giỏ Tour Du Lịch</h1>
+                <p class="text-muted mb-0">{{ count($cartItems) }} tour trong danh sách chờ</p>
+            </div>
+        </div>
+        @if (count($cartItems) > 0)
+        <form action="{{ route('cart.clear') }}" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa sạch giỏ hàng?');">
+            @csrf
+            <button type="submit" class="btn btn-outline-danger btn-sm border-0">
+                <i class="fa-solid fa-trash-can me-1"></i> Làm trống giỏ
+            </button>
+        </form>
+        @endif
     </div>
 
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fa-solid fa-check-circle me-2"></i>{{ session('success') }}
+    @if (session('error') || session('success'))
+        <div class="alert {{ session('success') ? 'alert-success' : 'alert-danger' }} border-0 shadow-sm alert-dismissible fade show rounded-3" role="alert">
+            <i class="fa-solid {{ session('success') ? 'fa-check-circle' : 'fa-circle-exclamation' }} me-2"></i>
+            {{ session('error') ?? session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
     @if (count($cartItems) > 0)
-        <div class="row">
-            <div class="col-lg-9">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light text-secondary">
-                                <tr>
-                                    <th style="width: 35%" class="ps-4 py-3">Thông tin Tour</th>
-                                    <th style="width: 20%">Ngày khởi hành</th>
-                                    <th style="width: 15%">Giá vé</th>
-                                    <th style="width: 15%">Số người</th>
-                                    <th style="width: 15%" class="text-end pe-4">Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($cartItems as $item)
-                                <tr>
-                                    <td class="ps-4 py-3">
-                                        <div class="fw-bold text-primary">{{ $item['name'] }}</div>
-                                        <div class="small text-muted">
-                                            <a href="{{ route('cart.remove', ['id' => $item['id']]) }}" 
-                                               onclick="return confirm('Bạn muốn xóa tour này?')"
-                                               class="text-danger text-decoration-none remove-link">
-                                                <i class="fa-solid fa-trash-can me-1"></i>Xóa
-                                            </a>
-                                        </div>
-                                    </td>
-                                    
-                                    <form action="{{ route('cart.update', $item['id']) }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        
-                                        <td>
-                                            <input type="date" name="departure_date" 
-                                                   class="form-control form-control-sm border-primary" 
-                                                   value="{{ $item['attributes']['departure_date'] ?? date('Y-m-d') }}" 
-                                                   required>
-                                        </td>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                @foreach ($cartItems as $item)
+                <div class="card border-0 shadow-sm rounded-4 mb-3 overflow-hidden item-card">
+                    <div class="card-body p-0">
+                        <div class="row g-0 align-items-center">
+                            <div class="col-md-5 p-4">
+                                <h5 class="fw-bold text-primary mb-1">{{ $item['name'] }}</h5>
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-dark border"><i class="fa-solid fa-tag me-1 text-primary"></i> {{ number_format($item['price']) }}₫ / khách</span>
+                                </div>
+                                <form action="{{ route('cart.remove', $item['id']) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Xóa tour này khỏi giỏ hàng?')"
+                                    class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
 
-                                        <td>{{ number_format($item['price']) }}₫</td>
+                                    <button type="submit"
+                                            class="btn btn-link text-danger small text-decoration-none hover-underline p-0">
+                                        <i class="fa-solid fa-trash-can me-1"></i> Loại bỏ
+                                    </button>
+                                </form>
+                            </div>
 
-                                        <td>
-                                            <div class="input-group input-group-sm" style="width: 100px;">
-                                                <input type="number" name="quantity" 
-                                                       class="form-control text-center" 
-                                                       value="{{ $item['quantity'] }}" min="1">
-                                                <button type="submit" class="btn btn-outline-secondary" title="Cập nhật">
-                                                    <i class="fa-solid fa-rotate"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </form>
-
-                                    <td class="text-end pe-4 fw-bold">
-                                        {{ number_format($item['price'] * $item['quantity']) }}₫
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                            <div class="col-md-7 bg-light p-4">
+                                <form action="{{ route('cart.update', $item['id']) }}" method="POST" class="row g-3 align-items-center">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="col-6">
+                                        <label class="small fw-bold text-muted">Ngày đi</label>
+                                        <input type="date" name="departure_date" 
+                                               class="form-control form-control-sm border-0 shadow-sm" 
+                                               value="{{ $item['attributes']['departure_date'] ?? date('Y-m-d') }}" required>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="small fw-bold text-muted">Số người</label>
+                                        <input type="number" name="quantity" 
+                                               class="form-control form-control-sm border-0 shadow-sm text-center" 
+                                               value="{{ $item['quantity'] }}" min="1">
+                                    </div>
+                                    <div class="col-2 pt-4">
+                                        <button type="submit" class="btn btn-primary btn-sm w-100 shadow-sm" title="Cập nhật">
+                                            <i class="fa-solid fa-rotate"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                                <div class="text-end mt-3">
+                                    <span class="text-muted small">Thành tiền:</span>
+                                    <span class="h5 fw-bold text-dark ms-2">{{ number_format($item['price'] * $item['quantity']) }}₫</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
-                        <i class="fa-solid fa-arrow-left me-2"></i>Tiếp tục xem Tour
+                @endforeach
+
+                <div class="mt-4">
+                    <a href="{{ route('products.index') }}" class="btn btn-link text-white text-decoration-none p-0">
+                        <i class="fa-solid fa-chevron-left me-2"></i> Tiếp tục tìm kiếm Tour khác
                     </a>
-                    <form action="{{ route('cart.clear') }}" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa sạch giỏ hàng?');">
-                        @csrf
-                        <button type="submit" class="btn btn-outline-danger">
-                            <i class="fa-solid fa-trash me-2"></i>Xóa hết giỏ hàng
-                        </button>
-                    </form>
                 </div>
             </div>
 
-            <div class="col-lg-3">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0 fw-bold">Tóm tắt đơn hàng</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Tạm tính:</span>
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg rounded-4 sticky-top" style="top: 100px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4 border-bottom pb-3">Chi tiết đơn hàng</h5>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Tạm tính ({{ count($cartItems) }} tour)</span>
                             <span class="fw-bold">{{ number_format($total) }}₫</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3">
-                            <span class="text-muted">Giảm giá:</span>
-                            <span class="text-success">-0₫</span>
+                            <span class="text-muted">Phí dịch vụ</span>
+                            <span class="text-success">Miễn phí</span>
                         </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-4">
-                            <span class="h5 mb-0">Tổng cộng:</span>
-                            <span class="h5 mb-0 text-primary">{{ number_format($total) }}₫</span>
+                        
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-3 mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h6 mb-0 fw-bold">Tổng thanh toán:</span>
+                                <span class="h4 mb-0 fw-bold text-primary">{{ number_format($total) }}₫</span>
+                            </div>
                         </div>
 
-                        <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                            Tiến hành đặt vé <i class="fa-solid fa-arrow-right ms-2"></i>
+                        <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow mb-3">
+                            TIẾN HÀNH ĐẶT VÉ <i class="fa-solid fa-arrow-right-long ms-2"></i>
                         </a>
                         
-                        <div class="mt-3 text-center small text-muted">
-                            <i class="fa-solid fa-shield-halved me-1"></i> Bảo mật thanh toán 100%
+                        <div class="text-center small">
+                            <p class="text-muted mb-0"><i class="fa-solid fa-lock me-1 text-success"></i> Thanh toán an toàn qua SSL</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     @else
-        <div class="text-center py-5 bg-white shadow-sm rounded">
-            <div class="mb-4">
-                <img src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png" alt="Empty Cart" style="width: 100px; opacity: 0.5;">
+        <div class="text-center py-5 rounded-4 shadow-sm" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);">
+            <div class="empty-cart-animation mb-4">
+                <i class="fa-solid fa-cart-shopping text-muted opacity-25" style="font-size: 100px;"></i>
             </div>
-            <h3 class="fw-bold text-secondary">Giỏ hàng chưa có Tour nào</h3>
-            <p class="text-muted mb-4">Hãy khám phá các điểm đến tuyệt vời và thêm vào đây nhé!</p>
-            <a href="{{ route('products.index') }}" class="btn btn-primary btn-lg px-5">
-                <i class="fa-solid fa-plane-departure me-2"></i>Khám phá ngay
+            <h3 class="fw-bold text-dark">Giỏ hàng đang trống!</h3>
+            <p class="text-muted mb-4">Bạn chưa chọn được điểm đến nào ưng ý sao?</p>
+            <a href="{{ route('products.index') }}" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
+                <i class="fa-solid fa-magnifying-glass me-2"></i> Khám phá Tour ngay
             </a>
         </div>
     @endif
 </div>
 
 <style>
-    .remove-link { font-size: 0.85rem; cursor: pointer; }
-    .remove-link:hover { text-decoration: underline !important; }
+    /* Hiệu ứng hover cho card tour */
+    .item-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .item-card:hover {
+        transform: translateX(10px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Hiệu ứng cho nút xóa */
+    .hover-underline:hover {
+        text-decoration: underline !important;
+    }
+
+    /* Bo góc cho input */
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        border-color: #0d6efd;
+    }
+
+    .icon-box {
+        width: 55px;
+        height: 55px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 @endsection

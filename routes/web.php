@@ -18,6 +18,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,12 +32,16 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
 // --- CART ROUTES ---
-Route::prefix('cart')->group(function () {
-    Route::get('/', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/add/{product}', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/clear', [CartController::class, 'clear'])->name('cart.clear');
-    Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+Route::prefix('cart')
+    ->middleware('auth')
+    ->group(function () {
+
+        Route::get('/', [CartController::class, 'index'])->name('cart.index');
+        Route::post('/add/{product}', [CartController::class, 'add'])->name('cart.add');
+        Route::post('/clear', [CartController::class, 'clear'])->name('cart.clear');
+        Route::put('/update/{id}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+
 });
 
 // --- AUTHENTICATION ROUTES (Đăng nhập/Đăng ký/Quên mật khẩu) ---
@@ -99,10 +104,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Quản lý đánh giá (Reviews)
-    Route::get('/reviews', [ReviewController::class, 'index'])->name('admin.reviews.index');
-    Route::post('/reviews/{review}/approve', [ReviewController::class, 'approve'])->name('admin.reviews.approve');
-    Route::post('/reviews/{review}/reject', [ReviewController::class, 'reject'])->name('admin.reviews.reject');
-    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('admin.reviews.destroy');
+    
 
     // Quản lý sản phẩm (Products)
     Route::prefix('products')->group(function () {
@@ -129,16 +131,24 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     });
     
     // Quản lý người dùng (Users)
-    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
-    Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
-    
-    // Cấp/Hủy quyền admin
-    Route::post('/users/{user}/make-admin', [UserController::class, 'makeAdmin'])->name('admin.users.make-admin');
-    Route::post('/users/{user}/revoke-admin', [UserController::class, 'revokeAdmin'])->name('admin.users.revoke-admin');
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
+        Route::get('/create', [UserController::class, 'create'])->name('admin.users.create');
+        Route::post('/', [UserController::class, 'store'])->name('admin.users.store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('admin.users.update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy'); // Route này có thể dùng để xóa vĩnh viễn
+        
+        // --- CÁC HÀNH ĐỘNG ĐẶC BIỆT ---
+        
+        // Cấp/Hủy Admin
+        Route::post('/{user}/make-admin', [UserController::class, 'makeAdmin'])->name('admin.users.make-admin');
+        Route::post('/{user}/revoke-admin', [UserController::class, 'revokeAdmin'])->name('admin.users.revoke-admin');
+
+        // 👇 ĐÃ SỬA: KHÓA / MỞ KHÓA (Dùng POST để khớp với form)
+        Route::post('/{user}/lock', [UserController::class, 'lock'])->name('admin.users.lock');
+        Route::post('/{user}/unlock', [UserController::class, 'unlock'])->name('admin.users.unlock');
+});
 });
 
 
@@ -155,4 +165,13 @@ Route::get('/check-admin', function() {
 // Fallback route for 404 errors (Đặt cuối cùng)
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
+});
+
+
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/reviews', [AdminReviewController::class, 'index'])
+        ->name('admin.reviews.index');
+
+    Route::patch('/reviews/{review}/toggle', [AdminReviewController::class, 'toggle'])
+        ->name('admin.reviews.toggle');
 });

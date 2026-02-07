@@ -14,6 +14,7 @@ class Kernel extends HttpKernel
 
         // THÊM DÒNG NÀY ↓↓↓
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        \App\Http\Middleware\CheckAccountStatus::class,
     ];
 }
 ?>

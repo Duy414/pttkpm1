@@ -16,8 +16,8 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::with('user')
-            ->orderBy('id', 'asc')
-            ->paginate(15);
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         // Tính tổng doanh thu các đơn hàng đã hoàn thành
         $totalRevenue = Order::where('status', 'completed')->sum('total');

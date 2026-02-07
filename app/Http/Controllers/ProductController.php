@@ -86,13 +86,13 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        $product->load(['reviews.user']);
+        $product->load([
+            'reviews' => function ($q) {
+                $q->where('is_hidden', false);
+            }
+        ]);
 
         return view('products.show', compact('product'));
-    }
-    public function create()
-    {
-        return view('admin.products.create');
     }
 
     public function update(Request $request, Product $product)

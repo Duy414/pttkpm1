@@ -121,13 +121,14 @@
             </div>
             <div class="card mb-4"> <div class="card-header">Xóa tài khoản</div>
 
-                <form action="{{ route('admin.users.destroy', $user) }}" method="POST">
+                <form action="{{ route('admin.users.destroy', $user) }}"
+                    method="POST"
+                    onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này?')">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                        onclick="return confirm('CẢNH BÁO: Bạn chắc chắn muốn xóa tài khoản {{ $user->name }}?')" 
-                        title="Xóa tài khoản">
-                        <i class="fas fa-trash"></i>Xóa tài khoản
+
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        Xóa
                     </button>
                 </form>
             </div>

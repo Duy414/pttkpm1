@@ -9,29 +9,19 @@ class ReviewController extends Controller
 {
     public function index()
     {
-        $reviews = Review::with(['product', 'user'])
+        $reviews = Review::with(['user', 'product'])
             ->latest()
-            ->paginate(20);
-            
+            ->paginate(10);
+
         return view('admin.reviews.index', compact('reviews'));
     }
-    
-    public function approve(Review $review)
+
+    public function toggle(Review $review)
     {
-        $review->update(['approved' => true]);
-        return back()->with('success', 'Đánh giá đã được duyệt!');
-    }
-    
-    public function reject(Review $review)
-    {
-        $review->update(['approwed' => true]);
-        return back()->with('success', 'Đánh giá đã bị từ chối!');
-    }
-    
-    public function destroy(Review $review)
-    {
-        $review->delete();
-        return back()->with('success', 'Đánh giá đã bị xóa!');
+        $review->is_hidden = !$review->is_hidden;
+        $review->save();
+
+        return back();
     }
 }
 

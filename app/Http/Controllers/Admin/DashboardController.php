@@ -12,22 +12,31 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-            $userCount = User::count();
+        // ===== Thống kê cơ bản =====
+        $userCount = User::count();
         $productCount = Product::count();
         $orderCount = Order::count();
         $pendingOrderCount = Order::where('status', 'pending')->count();
 
-        // Lọc ngày
-        $date = $request->input('date'); // format: 'YYYY-MM-DD'
+        // ===== Nhận ngày từ form =====
+        $startDate = $request->start_date;
+        $endDate   = $request->end_date;
 
+        // ===== Query doanh thu (chỉ đơn hoàn thành) =====
         $totalRevenueQuery = Order::where('status', 'completed');
 
-        if ($date) {
-            $totalRevenueQuery->whereDate('created_at', $date);
+        // ===== LỌC THEO KHOẢNG NGÀY =====
+        if ($startDate && $endDate) {
+            $totalRevenueQuery->whereBetween('created_at', [
+                $startDate . ' 00:00:00',
+                $endDate . ' 23:59:59'
+            ]);
         }
 
+        // ===== Tổng doanh thu =====
         $totalRevenue = $totalRevenueQuery->sum('total');
 
+        // ===== Booking mới nhất =====
         $recentOrders = Order::with('user')
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -40,8 +49,8 @@ class DashboardController extends Controller
             'pendingOrderCount',
             'totalRevenue',
             'recentOrders',
-            'date'
+            'startDate',
+            'endDate'
         ));
-        }
     }
-?>
+}

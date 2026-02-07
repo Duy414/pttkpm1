@@ -13,7 +13,6 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
-        // Kiểm tra nếu đã đăng nhập thì chuyển hướng
         if (Auth::check()) {
             return redirect('/');
         }
@@ -34,11 +33,27 @@ class LoginController extends Controller
 
         // Thực hiện đăng nhập
         if (Auth::attempt($credentials, $request->remember)) {
+            
+            // --- SỬA Ở ĐÂY: Kiểm tra trạng thái ngay sau khi xác thực thành công ---
+            if (!Auth::user()->is_active) {
+                // Nếu bị khóa thì đăng xuất ngay lập tức
+                Auth::logout();
+                
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()
+                    ->withInput($request->only('email'))
+                    ->withErrors(['email' => 'Tài khoản của bạn đã bị khóa.']);
+            }
+            // -----------------------------------------------------------------------
+
+            // Nếu tài khoản active thì mới cho vào
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
 
-        // Đăng nhập thất bại
+        // Đăng nhập thất bại (Sai email hoặc pass)
         return back()->withErrors([
             'email' => 'Email hoặc mật khẩu không chính xác.',
         ])->onlyInput('email');
@@ -51,14 +66,9 @@ class LoginController extends Controller
     {
         Auth::logout();
 
-        // Xóa session hiện tại
         $request->session()->invalidate();
-        
-        // Tạo lại CSRF token
         $request->session()->regenerateToken();
 
-        // Chuyển hướng về trang chủ thay vì trả về view
         return redirect('/');
     }
 }
-?>
